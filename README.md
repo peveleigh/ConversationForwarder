@@ -1,5 +1,5 @@
 # ConversationForwarder
-A Home Assistant custom component to voice assistant conversations to an HTTP endpoint. 
+A Home Assistant custom component to route voice assistant conversations to an HTTP endpoint. 
 
 This code was copied from [nodered_conversation](https://github.com/roblandry/nodered_conversation) and modified to meet my needs. There are lots of remnants of the original code and decisions. This was meant to be a quick and dirty solution to get my voice assistant bot up and working. I am hoping, one day, there is an official component that does this.  I have no intention of converting this into an official component or even providing any significant support for this one, but I'm sharing as others might find it useful. Additionally, I'm not really a Python developer. I've worked in a dozen other languages, but Python work has been mostly things like this...modifying something that already works to do what I need it to.
 
