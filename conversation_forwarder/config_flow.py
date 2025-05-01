@@ -28,8 +28,6 @@ STEP_USER_DATA_SCHEMA = vol.Schema(
 DEFAULT_OPTIONS = types.MappingProxyType(
     {
         CONF_URL: "",
-        CONF_USER: "username",
-        CONF_PASS: "password",
     }
 )
 
@@ -63,7 +61,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         errors = {}
 
         try:
-            input = await validate_input(self.hass, user_input)
+            await validate_input(self.hass, user_input)
             return self.async_create_entry(title="", data=user_input)
             
     #         # except error.APIConnectionError:
@@ -101,7 +99,7 @@ class OptionsFlow(config_entries.OptionsFlow):
     ) -> FlowResult:
         """Manage the options."""
         if user_input is not None:
-            self.hass.config_entries.async_update_entry(self.config_entry, data={CONF_URL: user_input[CONF_URL], CONF_USER: user_input[CONF_USER],CONF_PASS: user_input[CONF_PASS]})
+            self.hass.config_entries.async_update_entry(self.config_entry, data={CONF_URL: user_input[CONF_URL]})
             return self.async_create_entry(title="", data=user_input)
 
         schema = cf_config_option_schema(self.config_entry.options)
@@ -119,16 +117,6 @@ def cf_config_option_schema(options: MappingProxyType[str, Any]) -> dict:
         vol.Required(
             CONF_URL,
             description={"suggested_value": options.get(CONF_URL, "")},
-            default="",
-        ): str,
-        vol.Optional(
-            CONF_USER,
-            description={"suggested_value": ""},
-            default="",
-        ): str,
-        vol.Optional(
-            CONF_PASS,
-            description={"suggested_value": ""},
             default="",
         ): str,
     }
