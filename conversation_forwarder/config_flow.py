@@ -14,8 +14,6 @@ from homeassistant.data_entry_flow import FlowResult
 
 from .const import (
     CONF_URL,
-    CONF_USER,
-    CONF_PASS,
     DOMAIN,
 )
 
@@ -24,8 +22,6 @@ _LOGGER = logging.getLogger(__name__)
 STEP_USER_DATA_SCHEMA = vol.Schema(
     {
         vol.Required(CONF_URL): str,
-        vol.Optional(CONF_USER): str,
-        vol.Optional(CONF_PASS): str,
     }
 )
 

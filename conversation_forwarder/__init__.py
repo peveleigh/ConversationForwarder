@@ -4,14 +4,11 @@
 # https://github.com/roblandry/nodered_conversation
 from __future__ import annotations
 
-from functools import partial
 import logging
 import aiohttp
 import json
 import base64
 from typing import Literal
-
-import voluptuous as vol
 
 from homeassistant.components import conversation
 from homeassistant.config_entries import ConfigEntry
@@ -21,7 +18,6 @@ from homeassistant.core import (
     HomeAssistant,
 )
 from homeassistant.helpers import config_validation as cv, intent
-from homeassistant.util import ulid
 
 from .const import (
     CONF_URL,
@@ -114,7 +110,7 @@ class CFAgent(conversation.AbstractConversationAgent):
                 "message": "Sorry, I didn't get a response from endpoint. Check your logs for possible issues."
             }
 
-        _LOGGER.debug(f"Result %s", result)
+        _LOGGER.debug("Result %s", result)
 
         # https://github.com/home-assistant/core/blob/220aaf93c6b0d201bb4baa59d96ff9d9c8a66279/homeassistant/helpers/intent.py#L1380
         intent_response = intent.IntentResponse(language=user_input.language)
