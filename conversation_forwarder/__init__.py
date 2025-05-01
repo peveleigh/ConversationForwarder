@@ -21,8 +21,6 @@ from homeassistant.helpers import config_validation as cv, intent
 
 from .const import (
     CONF_URL,
-    CONF_USER,
-    CONF_PASS,
     DOMAIN,
 )
 
@@ -37,14 +35,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     _LOGGER.info(f"entry.data: {entry.data}")
     
-    user = ""
-    password = ""
-    if CONF_USER in entry.data:
-        user = entry.data[CONF_USER]
-    if CONF_PASS in entry.data:
-        password = entry.data[CONF_PASS]
-    
-    conversation.async_set_agent(hass, entry, CFAgent(hass, entry, entry.data[CONF_URL], user, password ))
+    conversation.async_set_agent(hass, entry, CFAgent(hass, entry, entry.data[CONF_URL]))
     return True
 
 
@@ -58,16 +49,12 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 class CFAgent(conversation.AbstractConversationAgent):
     """Conversation Forwarder agent."""
 
-    def __init__(self, hass: HomeAssistant, entry: ConfigEntry, configUrl, configUser, configPass) -> None:
+    def __init__(self, hass: HomeAssistant, entry: ConfigEntry, configUrl) -> None:
         """Initialize the agent."""
         self.hass = hass
         self.entry = entry
         self.url=configUrl
-        self.user=configPass
-        self.password=configPass
         _LOGGER.debug("configUrl %s", configUrl)
-        _LOGGER.debug("configUser %s", configUser)
-        _LOGGER.debug("configPass %s", configPass)
 
     @property
     def supported_languages(self) -> list[str] | Literal["*"]:
