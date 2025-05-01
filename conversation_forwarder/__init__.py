@@ -7,7 +7,6 @@ from __future__ import annotations
 import logging
 import aiohttp
 import json
-import base64
 from typing import Literal
 
 from homeassistant.components import conversation
@@ -61,27 +60,27 @@ class CFAgent(conversation.AbstractConversationAgent):
         """Return a list of supported languages."""
         return MATCH_ALL
     
-    async def call_post_request(self, url: str, auth: str, data: dict):
+    async def call_get_request(self, url: str, params: dict):
         async with aiohttp.ClientSession(connector=aiohttp.TCPConnector(verify_ssl=False)) as session:
-            # session.headers.update({"Authorization": f"Basic {auth}"})
-            async with session.post(url, json=data) as response:
+            async with session.get(url, params=params) as response:
                 text = await response.text()
-                #_LOGGER.warning(f"Post Result: {response}")
-                _LOGGER.info(f"Post Result text: {text}")
+                #_LOGGER.warning(f"Get Result: {response}")
+                _LOGGER.info(f"Get Result text: {text}")
                 return text
 
     async def async_process(
         self, user_input: conversation.ConversationInput
     ) -> conversation.ConversationResult:
         """Process a sentence."""
-        content = {'text': user_input.text, 'conversation_id': user_input.conversation_id, 'device_id': user_input.device_id, 'language': user_input.language, 'agent_id': user_input.agent_id, 'extra_system_prompt': user_input.extra_system_prompt}
-        
+        #content = {'text': user_input.text, 'conversation_id': user_input.conversation_id, 'device_id': user_input.device_id, 'language': user_input.language, 'agent_id': user_input.agent_id, 'extra_system_prompt': user_input.extra_system_prompt}
+        content = {"q": user_input.text}
+
         _LOGGER.debug("Content sent to endpoint %s", content)
-        auth = base64.b64encode(f"{self.user}:{self.password}".encode()).decode()
+
         
         try:
             _LOGGER.info(f"url: {self.url}")
-            result_req = await self.call_post_request(self.url, auth, content)
+            result_req = await self.call_get_request(self.url, content)
             result = json.loads(result_req)
         except aiohttp.ClientError:
             _LOGGER.warning("Unable to connect to endpoint "+self.url)
