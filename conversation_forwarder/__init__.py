@@ -4,24 +4,26 @@
 # https://github.com/roblandry/nodered_conversation
 from __future__ import annotations
 
-import logging
-import aiohttp
 import json
-from typing import Literal
+import logging
+from typing import TYPE_CHECKING, Literal
 
+import aiohttp
 from homeassistant.components import conversation
-from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import MATCH_ALL
-
-from homeassistant.core import (
-    HomeAssistant,
-)
-from homeassistant.helpers import config_validation as cv, intent
+from homeassistant.helpers import config_validation as cv
+from homeassistant.helpers import intent
 
 from .const import (
     CONF_URL,
     DOMAIN,
 )
+
+if TYPE_CHECKING:
+    from homeassistant.config_entries import ConfigEntry
+    from homeassistant.core import (
+        HomeAssistant,
+    )
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -29,18 +31,18 @@ CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up Conversation Forwarderfrom a config entry."""
+    hass.data.setdefault(DOMAIN, {})[entry.entry_id] = entry.data[CONF_URL]
 
-    #hass.data.setdefault(DOMAIN, {})[entry.entry_id] = entry.data[CONF_URL]
+    _LOGGER.info("entry.data: %s", entry.data)
 
-    _LOGGER.info(f"entry.data: {entry.data}")
-    
-    conversation.async_set_agent(hass, entry, CFAgent(hass, entry, entry.data[CONF_URL]))
+    conversation.async_set_agent(hass, entry, CFAgent(hass, entry))
     return True
 
 
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
+    """Unload entry."""
     hass.data[DOMAIN].pop(entry.entry_id)
-    
+
     conversation.async_unset_agent(hass, entry)
     return True
 
@@ -48,52 +50,55 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 class CFAgent(conversation.AbstractConversationAgent):
     """Conversation Forwarder agent."""
 
-    def __init__(self, hass: HomeAssistant, entry: ConfigEntry, configUrl) -> None:
+    def __init__(self, hass: HomeAssistant, entry: ConfigEntry) -> None:
         """Initialize the agent."""
         self.hass = hass
         self.entry = entry
-        self.url=configUrl
-        _LOGGER.debug("configUrl %s", configUrl)
+        self.url=entry.data[CONF_URL]
+        _LOGGER.debug("configUrl %s", entry.data[CONF_URL])
 
     @property
     def supported_languages(self) -> list[str] | Literal["*"]:
         """Return a list of supported languages."""
         return MATCH_ALL
-    
-    async def call_get_request(self, url: str, params: dict):
-        async with aiohttp.ClientSession(connector=aiohttp.TCPConnector(verify_ssl=False)) as session:
-            async with session.get(url, params=params) as response:
-                text = await response.text()
-                #_LOGGER.warning(f"Get Result: {response}")
-                _LOGGER.info(f"Get Result text: {text}")
-                return text
+
+    async def call_get_request(self, url: str, params: dict) -> str:
+        """Connect to agent server."""
+        async with(
+             aiohttp.ClientSession(connector=aiohttp.TCPConnector(verify_ssl=False)) \
+                as session,
+            session.get(url, params=params) as response,
+        ):
+            text = await response.text()
+            _LOGGER.info("Post Result text: %s", text)
+            return text
 
     async def async_process(
-        self, user_input: conversation.ConversationInput
+        self, user_input: conversation.ConversationInput,
     ) -> conversation.ConversationResult:
         """Process a sentence."""
-        #content = {'text': user_input.text, 'conversation_id': user_input.conversation_id, 'device_id': user_input.device_id, 'language': user_input.language, 'agent_id': user_input.agent_id, 'extra_system_prompt': user_input.extra_system_prompt}
         content = {"q": user_input.text}
 
         _LOGGER.debug("Content sent to endpoint %s", content)
 
-        
         try:
-            _LOGGER.info(f"url: {self.url}")
+            _LOGGER.info("url: %s", self.url)
             result_req = await self.call_get_request(self.url, content)
             result = json.loads(result_req)
         except aiohttp.ClientError:
-            _LOGGER.warning("Unable to connect to endpoint "+self.url)
+            _LOGGER.warning("Unable to connect to endpoint %s", self.url)
             result = {
                 "finish_reason": "error",
-                "message": "Sorry, unable to connect to endpoint. Check settings and try again." 
+                "message": "Sorry, unable to connect to endpoint. Check settings and\
+                     try again.",
             }
         except json.decoder.JSONDecodeError as e:
-            _LOGGER.warning(f"Something happened: {e}")
-            _LOGGER.warning(f"Result: {result_req}")
+            _LOGGER.warning("Something happened: %s", e)
+            _LOGGER.warning("Result: %s", result_req)
             result = {
                 "finish_reason": "error",
-                "message": "Sorry, I didn't get a response from endpoint. Check your logs for possible issues."
+                "message": "Sorry, I didn't get a response from endpoint. \
+                    Check your logs for possible issues.",
             }
 
         _LOGGER.debug("Result %s", result)
@@ -101,17 +106,14 @@ class CFAgent(conversation.AbstractConversationAgent):
         # https://github.com/home-assistant/core/blob/220aaf93c6b0d201bb4baa59d96ff9d9c8a66279/homeassistant/helpers/intent.py#L1380
         intent_response = intent.IntentResponse(language=user_input.language)
 
-        shouldContinue = False
-        if result["finish_reason"]  != "error":
-            intent_response.async_set_speech(result["message"])
-            shouldContinue = result["continue_conversation"]
-        else:
-            intent_response.async_set_speech(result["message"])
+        should_continue = False
+        intent_response.async_set_speech(result)
 
-        _LOGGER.debug(f"shouldContinue {shouldContinue}")
+        _LOGGER.debug("should_continue %s", should_continue)
         # https://github.com/home-assistant/core/blob/eb3cb0e0c7835ca10cdbb225d85f5e22d512e290/homeassistant/components/conversation/models.py#L60
         return conversation.ConversationResult(
-            response=intent_response, conversation_id=user_input.conversation_id, continue_conversation=shouldContinue,
-            #response=intent_response, conversation_id=user_input.conversation_id, 
+            response=intent_response,
+            conversation_id=user_input.conversation_id,
+            continue_conversation=should_continue,
         )
 
