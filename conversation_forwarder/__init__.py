@@ -77,7 +77,7 @@ class CFAgent(conversation.AbstractConversationAgent):
         self, user_input: conversation.ConversationInput,
     ) -> conversation.ConversationResult:
         """Process a sentence."""
-        content = {"q": user_input.text}
+        content = {"query": user_input.text}
 
         _LOGGER.debug("Content sent to endpoint %s", content)
 

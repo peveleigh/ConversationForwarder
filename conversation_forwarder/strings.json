@@ -3,18 +3,15 @@
     "step": {
       "user": {
         "data": {
-          "server_url": "Conversation Endpoint",
-          "user": "Endpoint Username",
-          "password": "Endpoint Password"
+          "server_url": "Conversation Endpoint"
         },
-        "description": "Enter your endpoint, user, and password.",
+        "description": "Enter your endpoint.",
         "title": "Conversation Endpoint"
       }
     },
     "error": {
 	  "invalid_host": "[%key:common::config_flow::error::invalid_host%]",
       "cannot_connect": "[%key:common::config_flow::error::cannot_connect%]",
-      "invalid_auth": "[%key:common::config_flow::error::invalid_auth%]",
       "unknown": "[%key:common::config_flow::error::unknown%]"
     }
   },
@@ -22,11 +19,9 @@
     "step": {
       "init": {
         "data": {
-          "server_url": "Conversation Endpoint",
-          "user": "Endpoint Username",
-          "password": "Endpoint Password"
+          "server_url": "Conversation Endpoint"
         },
-        "description": "Enter your endpoint, user, and password.",
+        "description": "Enter your endpoint.",
         "title": "Conversation Endpoint"
       }
     }
