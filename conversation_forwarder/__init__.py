@@ -77,7 +77,15 @@ class CFAgent(conversation.AbstractConversationAgent):
         self, user_input: conversation.ConversationInput,
     ) -> conversation.ConversationResult:
         """Process a sentence."""
-        content = {"query": user_input.text}
+
+        conversation_id = user_input.conversation_id
+
+        content = {
+            "query": user_input.text,
+        }
+
+        if conversation_id is not None:
+            content["cid"] = conversation_id
 
         _LOGGER.debug("Content sent to endpoint %s", content)
 
@@ -113,7 +121,7 @@ class CFAgent(conversation.AbstractConversationAgent):
         # https://github.com/home-assistant/core/blob/eb3cb0e0c7835ca10cdbb225d85f5e22d512e290/homeassistant/components/conversation/models.py#L60
         return conversation.ConversationResult(
             response=intent_response,
-            conversation_id=user_input.conversation_id,
+            conversation_id=conversation_id,
             continue_conversation=should_continue,
         )
 
