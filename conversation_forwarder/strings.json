@@ -2,28 +2,36 @@
   "config": {
     "step": {
       "user": {
+        "title": "Conversation Endpoint",
+        "description": "Enter your bot HTTP endpoint.",
         "data": {
-          "server_url": "Conversation Endpoint"
-        },
-        "description": "Enter your endpoint.",
-        "title": "Conversation Endpoint"
+          "server_url": "Conversation Endpoint",
+          "verify_ssl": "Verify SSL certificate"
+        }
       }
     },
     "error": {
-	  "invalid_host": "[%key:common::config_flow::error::invalid_host%]",
+      "invalid_url": "Invalid endpoint URL. Must be an http(s) URL.",
       "cannot_connect": "[%key:common::config_flow::error::cannot_connect%]",
       "unknown": "[%key:common::config_flow::error::unknown%]"
+    },
+    "abort": {
+      "already_configured": "[%key:common::config_flow::abort::already_configured%]"
     }
   },
   "options": {
     "step": {
       "init": {
+        "title": "Conversation Endpoint",
+        "description": "Update your bot HTTP endpoint.",
         "data": {
-          "server_url": "Conversation Endpoint"
-        },
-        "description": "Enter your endpoint.",
-        "title": "Conversation Endpoint"
+          "server_url": "Conversation Endpoint",
+          "verify_ssl": "Verify SSL certificate"
+        }
       }
+    },
+    "error": {
+      "invalid_url": "Invalid endpoint URL. Must be an http(s) URL."
     }
   }
 }

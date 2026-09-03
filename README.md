@@ -1,35 +1,40 @@
 # ConversationForwarder
-A Home Assistant custom component to route voice assistant conversations to an HTTP endpoint. 
+A Home Assistant custom component to route voice assistant conversations to an HTTP endpoint.
 
 This code was copied from [conversation_fowarder by jimrush](https://github.com/jimrushPersonal/ConversationForwarder) and modified to meet my needs.
 
 **Prerequisites:**
-- Home Assistant 2025.4. This code returns the new continue_conversation flag. If used with an older Home Assistant, an error will be thrown.
+- Home Assistant 2025.4+. This integration uses the `ConversationEntity` API and returns the `continue_conversation` flag. Older versions will throw an error.
 
 **Usage:**
-- Copy conversation_forwarder folder to your Home Assistant custom_components folder.
-- Restart Home Assistant
-- Go to settings->integrations and add the Conversation Forwarder component.
-- The configuration requires a URL. This is your bot HTTP endpoint. Note, the call is made from the Home Assistant runtime so account for DNS or reference limitations (ie localhost may not be what you expect).
-- In Settings->Voice assistants, create an assist entry using the conversation_forwarder as the Conversation agent.
+- Copy the `conversation_forwarder` folder to your Home Assistant `custom_components` folder.
+- Restart Home Assistant.
+- Go to Settings → Integrations and add the Conversation Forwarder component.
+- Configure the **endpoint URL** of your bot and whether to **verify SSL** (disabled for self-signed local endpoints).
+- In Settings → Voice assistants, create an Assist entry using Conversation Forwarder as the conversation agent.
+
+The endpoint URL and SSL setting can be changed later via the integration's **Options**.
 
 **Format of HTTP Request**
-Method: GET
-Body: JSON data structure
+Method: `POST`
+Content-Type: `application/json`
 
-```
-  {
-    query: string - The user's spoken text from the STT
-  }
+```json
+{
+  "query": "string - the user's spoken text from the STT",
+  "cid": "string - conversation id, present when a conversation_id is available"
+}
 ```
 
 **Format of HTTP Response**
-The response needs to be valid JSON. Extra attributes may be added as they will be ignored (I put internal and diagnostic data for my test cases in the structure).
+The response must be valid JSON. Extra attributes are ignored.
 
+```json
+{
+  "finish_reason": "string - \"error\" or any other value; when \"error\", continue_conversation is ignored",
+  "message": "string - the message played back to the user",
+  "continue_conversation": "boolean - true indicates the conversation should continue"
+}
 ```
-  {
-    finish_reason: string - error or any other value. If error, the continuation_conversation flag will be ignored. I've come to the conclusion that the endpoint should handle all of the errors, if possible. HA doesn't really need to know. This is really left over logic I never removed.
-    message: string - The message to play back to the user.
-    continue_conversation: boolean - true indicates the conversation should continue
-  }
-```
+
+On connection errors, timeouts, or invalid JSON, a fallback error message is spoken and `finish_reason` is set to `"error"`.

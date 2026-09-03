@@ -1,51 +1,37 @@
 {
-    "config": {
-        "error": {
-            "invalid_host": "Invalid host url",
-            "cannot_connect": "Failed to connect",
-            "invalid_auth": "Invalid authentication",
-            "unknown": "Unexpected error"
-        },
-        "step": {
-            "user": {
-                "data": {
-                    "api_key": "API key"
-                }
-            }
+  "config": {
+    "step": {
+      "user": {
+        "title": "Conversation Endpoint",
+        "description": "Enter your bot HTTP endpoint.",
+        "data": {
+          "server_url": "Conversation Endpoint",
+          "verify_ssl": "Verify SSL certificate"
         }
+      }
     },
-    "options": {
-        "step": {
-            "init": {
-                "data": {
-                    "max_tokens": "Maximum tokens to return in response",
-                    "model": "Completion Model",
-                    "prompt": "Prompt Template",
-                    "temperature": "Temperature",
-                    "top_p": "Top P"
-                }
-            }
-        }
+    "error": {
+      "invalid_url": "Invalid endpoint URL. Must be an http(s) URL.",
+      "cannot_connect": "Failed to connect",
+      "unknown": "Unexpected error"
     },
-    "services": {
-        "generate_image": {
-            "description": "Turn a prompt into an image",
-            "fields": {
-                "config_entry": {
-                    "description": "The config entry to use for this service",
-                    "name": "Config Entry"
-                },
-                "prompt": {
-                    "description": "The text to turn into an image",
-                    "example": "A photo of a dog",
-                    "name": "Prompt"
-                },
-                "size": {
-                    "description": "The size of the image to generate",
-                    "name": "Size"
-                }
-            },
-            "name": "Generate image"
-        }
+    "abort": {
+      "already_configured": "Already configured"
     }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Conversation Endpoint",
+        "description": "Update your bot HTTP endpoint.",
+        "data": {
+          "server_url": "Conversation Endpoint",
+          "verify_ssl": "Verify SSL certificate"
+        }
+      }
+    },
+    "error": {
+      "invalid_url": "Invalid endpoint URL. Must be an http(s) URL."
+    }
+  }
 }
